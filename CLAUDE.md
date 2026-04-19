@@ -52,11 +52,11 @@ AIL2-ProveNode/
 
 | 维度 | 选型 |
 |------|------|
-| 语言 | **Go 1.22.9** |
+| 语言 | **Go 1.24+**（`go.mod` 指令为 `1.24.0`；开发 / CI / 部署都需 Go ≥ 1.24）|
 | HTTP 框架 | **gin-gonic/gin** |
 | WebSocket | **gorilla/websocket** |
 | 数据库 | **MongoDB**（`go.mongodb.org/mongo-driver`）|
-| 链交互 | **ethereum/go-ethereum**（适配 DBC EVM 兼容链）|
+| 链交互 | **ethereum/go-ethereum v1.17.0**（适配 DBC EVM 兼容链）|
 | 系统监控 | **shirou/gopsutil** |
 | 带宽测试 | **showwin/speedtest-go** |
 | 监控暴露 | **prometheus/client_golang** |
