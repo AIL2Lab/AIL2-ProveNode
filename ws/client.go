@@ -314,7 +314,7 @@ func (c *Client) handleOnlineRequest(ctx context.Context, req *types.WsRequest) 
 
 	onlineReq := &types.WsOnlineRequest{}
 	if err := json.Unmarshal(req.Body, onlineReq); err != nil {
-		return uint32(types.ErrCodeParam), fmt.Sprintf("parse online request failed: %f", err), []byte("")
+		return uint32(types.ErrCodeParam), fmt.Sprintf("parse online request failed: %v", err), []byte("")
 	}
 
 	if onlineReq.MachineId == "" {
@@ -647,6 +647,10 @@ func Ws2(hub *Hub, ctx *gin.Context, wsCtx context.Context) {
 	)
 
 	go client.writePump(wsCtx)
-	// go client.readPump(context.Background())
-	client.readPump(context.Background())
+	// readPump runs synchronously to keep the WS upgrade handler alive for
+	// the lifetime of the connection. wsCtx (not context.Background) is what
+	// we pass through to handleRequest so a hub shutdown propagates: any
+	// in-flight per-message handler can observe ctx.Done and bail instead of
+	// continuing to write to a database we're tearing down.
+	client.readPump(wsCtx)
 }
