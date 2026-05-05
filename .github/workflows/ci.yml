@@ -53,12 +53,14 @@ jobs:
           check-latest: true
           cache: true
 
-      - name: Test (-race)
-        # Most test packages need external infrastructure: MongoDB (db/*),
-        # DBC RPC node (ail2 dbc_test), real chain access, IP geolocation
-        # data. Until those are split into integration tier, gate on the
-        # one package that runs cleanly: GPU calc-point arithmetic.
-        run: go test -race -timeout 5m ./ail2/calculator/...
+      - name: Test (unit, -race)
+        # Integration tests are gated on AIL2_RUN_INTEGRATION_TESTS via
+        # internal/testutil.RequireIntegration; without that env they self-
+        # skip, so go test ./... is now clean across the whole module.
+        # MongoDB / DBC RPC / WebSocket-pair tests run only on a runner
+        # that has the matching infrastructure spun up (separate workflow,
+        # not this one).
+        run: go test -race -timeout 5m ./...
 
   govulncheck:
     name: govulncheck

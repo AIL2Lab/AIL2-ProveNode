@@ -6,11 +6,14 @@ import (
 	"testing"
 	"time"
 
+	"AIL2-ProveNode/internal/testutil"
+
 	"github.com/gorilla/websocket"
 )
 
 // go test -v -timeout 30s -count=1 -run TestWsEcho AIL2-ProveNode/ws
 func TestWsEcho(t *testing.T) {
+	testutil.RequireIntegration(t)
 	url := "ws://localhost:9521/echo"
 	c, _, err := websocket.DefaultDialer.Dial(url, nil)
 	if err != nil {

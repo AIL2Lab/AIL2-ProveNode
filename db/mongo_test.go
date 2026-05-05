@@ -8,6 +8,8 @@ import (
 	"testing"
 	"time"
 
+	"AIL2-ProveNode/internal/testutil"
+
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -15,6 +17,7 @@ import (
 
 // go test -v -timeout 30s -count=1 -run TestMongoDBBasic AIL2-ProveNode/db
 func TestMongoDBBasic(t *testing.T) {
+	testutil.RequireIntegration(t)
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
@@ -187,6 +190,7 @@ func TestMongoDBBasic(t *testing.T) {
 
 // go test -v -timeout 300s -count=1 -run TestMongoDBTimeSeries AIL2-ProveNode/db
 func TestMongoDBTimeSeries(t *testing.T) {
+	testutil.RequireIntegration(t)
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 

@@ -4,11 +4,14 @@ import (
 	"log"
 	"testing"
 
+	"AIL2-ProveNode/internal/testutil"
+
 	"github.com/ip2location/ip2location-go/v9"
 )
 
 // go test -v -timeout 30s -count=1 -run TestIp2Location AIL2-ProveNode/db
 func TestIp2Location(t *testing.T) {
+	testutil.RequireIntegration(t)
 	db, err := ip2location.OpenDB("../IP2LOCATION-LITE-DB5.BIN/IP2LOCATION-LITE-DB5.BIN")
 	if err != nil {
 		log.Fatalf("failed to open ip2location lite db: %v", err)

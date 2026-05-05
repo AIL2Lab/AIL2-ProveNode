@@ -11,6 +11,7 @@ import (
 	"time"
 
 	machineinfos "AIL2-ProveNode/ail2/machine-infos"
+	"AIL2-ProveNode/internal/testutil"
 	mt "AIL2-ProveNode/types"
 
 	"github.com/ethereum/go-ethereum"
@@ -32,6 +33,7 @@ const dbcTestNetRPC = "https://rpc-testnet.dbcwallet.io"
 
 // go test -v -timeout 30s -count=1 -run TestDbcContract AIL2-ProveNode/ail2
 func TestDbcContract(t *testing.T) {
+	testutil.RequireIntegration(t)
 	// Load ABI from file
 	abiFile := "ai_abi.json"
 	abiData, err := os.ReadFile(abiFile)
@@ -131,6 +133,7 @@ func TestDbcContract(t *testing.T) {
 
 // go test -v -timeout 120s -count=1 -run TestContractReport AIL2-ProveNode/ail2
 func TestContractReport(t *testing.T) {
+	testutil.RequireIntegration(t)
 	ctx := context.Background()
 	var cancel context.CancelFunc
 	if deadline, ok := t.Deadline(); ok {
@@ -208,6 +211,7 @@ func TestContractReport(t *testing.T) {
 
 // go test -v -timeout 30s -count=1 -run TestGetMachineInfo AIL2-ProveNode/ail2
 func TestGetMachineInfo(t *testing.T) {
+	testutil.RequireIntegration(t)
 	// Define the target contract address
 	toAddress := common.HexToAddress(machineinfosContractAddressOnTestnet)
 
@@ -247,6 +251,7 @@ func TestGetMachineInfo(t *testing.T) {
 
 // go test -v -timeout 60s -count=1 -run TestSetMachineInfoWithAbi AIL2-ProveNode/ail2
 func TestSetMachineInfoWithAbi(t *testing.T) {
+	testutil.RequireIntegration(t)
 	// Load ABI from file
 	abiData, err := os.ReadFile("machineinfos.json")
 	if err != nil {
@@ -371,6 +376,7 @@ func TestSetMachineInfoWithAbi(t *testing.T) {
 
 // go test -v -timeout 60s -count=1 -run TestSetMachineInfoWithoutAbi AIL2-ProveNode/ail2
 func TestSetMachineInfoWithoutAbi(t *testing.T) {
+	testutil.RequireIntegration(t)
 	// Define the target contract address
 	toAddress := common.HexToAddress(machineinfosContractAddressOnTestnet)
 
