@@ -26,9 +26,23 @@ type ContractConfig struct {
 }
 
 type ChainConfig struct {
-	Rpc                 string         `json:"Rpc"`
-	ChainId             int64          `json:"ChainId"`
-	PrivateKey          string         `json:"PrivateKey"`
+	Rpc     string `json:"Rpc"`
+	ChainId int64  `json:"ChainId"`
+	// PrivateKey is the legacy in-config plaintext field. New deployments
+	// should leave it empty and instead set PrivateKeyEnv or PrivateKeyFile
+	// so the secret never lives next to the rest of the JSON config (which
+	// tends to end up in version control, backups, or shared dashboards).
+	// Kept for backward compat; a deprecation warning is logged on load.
+	PrivateKey string `json:"PrivateKey,omitempty"`
+	// PrivateKeyEnv names an environment variable holding the hex-encoded
+	// private key. Recommended for systemd / Docker / Kubernetes secrets
+	// where the orchestrator already has a path for injecting credentials.
+	PrivateKeyEnv string `json:"PrivateKeyEnv,omitempty"`
+	// PrivateKeyFile points at a file (typically 0400, outside the repo /
+	// world-readable backups) containing only the hex-encoded private key.
+	// Trailing whitespace and newlines are trimmed on read. Useful with
+	// systemd LoadCredential= or any "secret-mounted at path" pattern.
+	PrivateKeyFile      string         `json:"PrivateKeyFile,omitempty"`
 	ReportContract      ContractConfig `json:"ReportContract"`
 	MachineInfoContract ContractConfig `json:"MachineInfoContract"`
 }

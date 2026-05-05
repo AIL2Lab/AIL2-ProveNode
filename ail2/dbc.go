@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"math/big"
 	"os"
+	"strings"
 	"sync"
 
 	"github.com/ethereum/go-ethereum"
@@ -18,6 +19,7 @@ import (
 
 	aireport "AIL2-ProveNode/ail2/ai-report"
 	machineinfos "AIL2-ProveNode/ail2/machine-infos"
+	"AIL2-ProveNode/log"
 	mt "AIL2-ProveNode/types"
 )
 
@@ -42,6 +44,46 @@ type dbcChain struct {
 	txMutex sync.Mutex
 }
 
+// resolvePrivateKey returns the hex-encoded private key from the most
+// secure source the operator configured, in this priority order:
+//
+//	PrivateKeyEnv  → environment variable (preferred — orchestrator-injected
+//	                 secrets, never on disk, easy to rotate)
+//	PrivateKeyFile → on-disk file (preferred when systemd LoadCredential
+//	                 or a mounted secret volume is in use)
+//	PrivateKey     → inline JSON (deprecated — the secret ends up next to
+//	                 the rest of the config and is easy to leak via backup
+//	                 / version control / log scraping)
+//
+// Returns an error if none of the three is set or the chosen source is
+// unreadable. Whitespace / trailing newlines on the file path are trimmed
+// so a key file ending in \n still parses cleanly.
+func resolvePrivateKey(config mt.ChainConfig) (string, error) {
+	if name := strings.TrimSpace(config.PrivateKeyEnv); name != "" {
+		v := strings.TrimSpace(os.Getenv(name))
+		if v == "" {
+			return "", fmt.Errorf("private key env var %q is empty or unset", name)
+		}
+		return v, nil
+	}
+	if path := strings.TrimSpace(config.PrivateKeyFile); path != "" {
+		raw, err := os.ReadFile(path)
+		if err != nil {
+			return "", fmt.Errorf("read private key file %q: %w", path, err)
+		}
+		v := strings.TrimSpace(string(raw))
+		if v == "" {
+			return "", fmt.Errorf("private key file %q is empty", path)
+		}
+		return v, nil
+	}
+	if v := strings.TrimSpace(config.PrivateKey); v != "" {
+		log.Log.Warn("Chain.PrivateKey is set inline in the config — migrate to PrivateKeyEnv or PrivateKeyFile so the secret stops shipping with the config blob.")
+		return v, nil
+	}
+	return "", fmt.Errorf("no private key configured: set Chain.PrivateKeyEnv (preferred), Chain.PrivateKeyFile, or Chain.PrivateKey")
+}
+
 func InitDbcChain(ctx context.Context, config mt.ChainConfig) error {
 	reportContract, err := initChainContract(ctx, config.ReportContract, config.Rpc, config.ChainId)
 	if err != nil {
@@ -52,9 +94,13 @@ func InitDbcChain(ctx context.Context, config mt.ChainConfig) error {
 		return err
 	}
 
-	privateKey, err := crypto.HexToECDSA(config.PrivateKey)
+	hexKey, err := resolvePrivateKey(config)
 	if err != nil {
-		return fmt.Errorf("failed to load private key: %v", err)
+		return fmt.Errorf("resolve private key: %w", err)
+	}
+	privateKey, err := crypto.HexToECDSA(hexKey)
+	if err != nil {
+		return fmt.Errorf("load private key: %w", err)
 	}
 	DbcChain = &dbcChain{
 		rpc:          config.Rpc,
